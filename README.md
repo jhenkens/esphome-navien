@@ -82,7 +82,11 @@ bash esphome run navien-wrd-hb.yml
 
 ### 7. Hardware
 
-#### [Connecting to Navien-240](./doc/240.md)
+#### [Hardware Build Guide — RS485 Adapter](./hardware-guide.md)
+
+Complete guide covering the M5Stack AtomS3 Lite + Atomic RS485 Base build, connector pinouts, wiring, how to enable NaviLink in the Navien installer menu, and common mistakes.
+
+#### [Navien-240 Connector Reference](./doc/240.md)
 
 ---
 
@@ -110,7 +114,7 @@ Then, set up the automation:
 
 ### 📖 User Manual for Custom Navien Controller
 
-For detailed instructions on connecting, configuring, and using the custom Navien controller device, see the [User Manual](./user_manual.md). This guide covers hardware setup, wiring, and usage tips specific to the custom controller.
+For detailed instructions on connecting, configuring, and using the custom Navien controller device, see the [User Manual](./doc/user_manual.md). This guide covers hardware setup, wiring, and usage tips specific to the custom controller.
 
 ------------------------------------------------------------------------
 
