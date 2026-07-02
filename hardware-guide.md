@@ -2,6 +2,8 @@
 
 This guide summarizes everything you need to build a working RS485 adapter for your Navien tankless water heater, based on hundreds of posts from the [Home Assistant community thread](https://community.home-assistant.io/t/navien-esp32-navilink-interface/720567). It covers the Navien-side connector, four proven hardware options, wiring tables, and the common mistakes people make.
 
+For full installation and parameter details, refer to the [Navien NPE-A/S Installation Manual](https://www.navieninc.com/downloads/npe-a-s-manuals-installation-manual-en).
+
 ---
 
 ## Before You Start: Enable NaviLink in the Installer Menu
@@ -10,10 +12,14 @@ This guide summarizes everything you need to build a working RS485 adapter for y
 
 Access the installer menu as follows:
 
-1. From the home screen of the Navien display, press: **Up × 3, Down × 3, Up × 4**
-2. Navigate to **Parameter P.18** (NaviLink enable/disable)
-3. Set it to **Enabled**
-4. Save and exit
+1. From the home screen, press and hold **Menu** and **↩ (back arrow)** simultaneously for 3 seconds. The service installer menu will appear.
+2. Choose **option 1** to enter the installer menu and press **OK**.
+3. Enter the default password **1234** using the up/down arrow buttons, then press **OK**.
+4. Select **option 3 — Application Settings**, press **OK**.
+5. Select **option 1 — NaviLink**, press **OK**.
+6. Select **option 1 — NaviLink Connection**, press **OK**. Read the info screen and press **OK** again.
+7. Move the cursor to **Enable** under NaviLink Connection and press **OK**.
+8. Press **↩** repeatedly to exit all menu screens. The unit will reboot and purge the lines. Your ESP should then begin reporting data.
 
 > **Note:** Units manufactured before approximately 2016 do not support NaviLink and cannot be used with this project.
 
@@ -67,7 +73,9 @@ Both variants are electrically identical and physically compatible with the Navi
 
 ### Hot Button Requirement
 
-The **hot button** feature (triggering instant hot water recirculation) requires the Navien hot button kit to be installed on the main board. Whether you need to do anything depends on your model:
+The **hot button** feature (triggering instant hot water recirculation) requires two things: the Navien hot button kit must be installed on the main board, and the unit must be configured to **External HotButton** recirculation mode. If the mode is not set correctly, the Hot Button entity in Home Assistant will do nothing when pressed.
+
+Whether the hardware is pre-installed depends on your model:
 
 - **NPE-240A2** — the hot button kit comes **pre-installed**. No additional steps needed.
 - **Other models (e.g. NPE-240A, NPE-210S)** — the hot button kit is **not included**. You must either purchase and install the official Navien hot button kit, or make the DIY bypass described below.
@@ -81,6 +89,33 @@ The main board has an empty 13-pin JST XH socket where the hot button board plug
 | ![13-pin hot button bypass on the Navien main board](images/13pin_hotbutton_bypass.jpeg) |
 |:---:|
 | Annotated 13-pin connector. The embedded labels describe triggering a physical hot button press via a relay. The pin labelled "+5V" is a digital input that is pulled high — to trigger the hot button, pull it to 0 V. If you only want RS485-based virtual hot button (no relay), you need just 4 pins total: the two pins shorted together, and the 10 KΩ resistor |
+
+#### Hot Button DIP Switches
+
+The hot button controller board has a 4-position DIP switch (SW1) that controls its behavior:
+
+| DIP SW | OFF | ON |
+|--------|-----|----|
+| 1 | Enable the HotButton | Disable the HotButton |
+| 2 | Enable the energy saver function | Disable the energy saver function |
+| 3 | Reserved | Reserved |
+| 4 | Reserved | Reserved |
+
+| ![HotButton DIP switch diagram](images/hotbutton_dip_switch.png) |
+|:---:|
+| SW1 DIP switch on the hot button controller board |
+
+#### Temperature Sensor and SENSOR I Contacts
+
+The hot button controller has a **SENSOR I** input for an optional recirculation return-line temperature sensor. By default, two metal contacts on SENSOR I are bridged by a metal plate — this is the no-sensor configuration and works without modification.
+
+If you want to connect a temperature sensor, remove the metal plate before connecting the sensor. **Do not leave the plate installed while connecting a sensor, as this will short the sensor input.**
+
+For most users: leave the metal plate in place and skip the temperature sensor entirely.
+
+#### Fixture Distance (Parameter 16)
+
+When no temperature sensor is connected (the default), the unit uses **Parameter 16** (fixture distance) to determine when to stop recirculating. The default value is **30 ft**. Adjust this parameter to match the approximate distance from the water heater to the furthest fixture if your setup differs significantly.
 
 ### RS485 Signal Levels
 
@@ -103,7 +138,7 @@ The recommended build is the **M5Stack AtomS3 Lite + Atomic RS485 Base**. The ba
 - [M5Stack Atomic RS485 Base](https://docs.m5stack.com/en/atom/Atomic%20RS485%20Base)
 - JST XHP-5 (plain) or XHB (locking) 5-pin connector + wire, or pre-made cable
 
-> **Termination resistor:** There is conflicting information about whether the Atomic RS485 Base includes an integrated 120 Ω termination resistor. The [latest schematics](https://docs.m5stack.com/en/atom/Atomic%20RS485%20Base) suggest it does; however, an [M5Stack example project](https://docs.m5stack.com/en/arduino/projects/atomic/atomic_rs485_232_base) calls for adding an external one. Other M5Stack RS485 products also ship with a loose through-hole resistor in the package — if yours does, use it across the A and B terminals. Do not add an external resistor if the base already has one integrated, as two resistors in parallel would drop the effective termination resistance below the correct 120 Ω.
+> **Termination resistor:** There is conflicting information about whether the Atomic RS485 Base includes an integrated 120 Ω termination resistor. The [latest schematics](https://docs.m5stack.com/en/atom/Atomic%20RS485%20Base) suggest it does; however, an [M5Stack example project](https://docs.m5stack.com/en/arduino/projects/atomic/atomic_rs485_232_base) calls for adding an external one. Other M5Stack RS485 products also ship with a loose through-hole resistor in the package — if yours does, use it across the A and B terminals. Do not add an external resistor if the base already has one integrated, as two resistors in parallel would drop the effective termination resistance below the correct 120 Ω. A unit ordered in June 2026 worked correctly without adding an external resistor.
 
 | ![120 Ω resistor across A and B terminals on the Atomic RS485 Base](images/atomic-rs485-base-120ohm-resistor.jpg) |
 |:---:|
@@ -131,7 +166,7 @@ The recommended build is the **M5Stack AtomS3 Lite + Atomic RS485 Base**. The ba
 | TX | GPIO2 |
 | RX | GPIO1 |
 
-**ESPHome YAML:** `navien-esphome-atoms3-lite-tail485-esp32.yml`
+**ESPHome YAML:** [`navien-esphome-atoms3-lite-rs485base-esp32.yml`](esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml)
 
 ---
 

@@ -670,6 +670,10 @@ void NavienHotButton::setup() {
 }
 
 void NavienHotButton::press_action(){
+  if (!this->parent->is_hotbutton_mode_enabled()) {
+    ESP_LOGW(TAG, "Hot Button pressed but Navien is not in External HotButton mode — command ignored. Set the recirculation mode to 'External HotButton' on the unit.");
+    return;
+  }
   this->parent->send_hot_button_cmd();
 }
 
