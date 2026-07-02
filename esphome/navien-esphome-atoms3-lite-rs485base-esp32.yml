@@ -28,7 +28,7 @@ packages:
     url: https://github.com/jhenkens/esphome-navien
     ref: hardware-guide
     files: [esphome/navien-atoms3-base.yaml]
-    refresh: 1d
+    refresh: 30s
 
 dashboard_import:
   package_import_url: github://jhenkens/esphome-navien/esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml@hardware-guide
