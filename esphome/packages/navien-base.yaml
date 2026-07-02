@@ -6,6 +6,9 @@ external_components:
 time:
   - platform: homeassistant
 
+web_server:
+  version: 3
+
 captive_portal:
 
 api:
