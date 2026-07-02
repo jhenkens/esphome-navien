@@ -1,0 +1,82 @@
+substitutions:
+  device_name: navien
+  friendly_name: Navien
+  tx_pin: GPIO6
+  rx_pin: GPIO5
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: jhenkens.navien-atoms3-rs485base
+    version: "1.0.0"
+
+esp32:
+  board: m5stack-atoms3
+  variant: esp32s3
+  framework:
+    type: esp-idf
+
+wifi:
+  fast_connect: true
+  ap:
+    ssid: ${device_name} AP
+
+packages:
+  navien_base:
+    url: https://github.com/jhenkens/esphome-navien
+    ref: hardware-guide
+    files: [esphome/packages/navien-base.yaml]
+    refresh: 30s
+
+# LED: green when API connected, off otherwise
+light:
+  - platform: esp32_rmt_led_strip
+    id: atom_led
+    internal: true
+    pin: GPIO35
+    num_leds: 1
+    rgb_order: GRB
+    chipset: WS2812
+  - platform: status_led
+    id: atom_status_led
+    internal: true
+    output: atom_status_output
+
+output:
+  - platform: template
+    id: atom_status_output
+    type: binary
+    write_action:
+      - if:
+          condition:
+            lambda: return state;
+          then:
+            - light.turn_on:
+                id: atom_led
+                red: 0%
+                green: 100%
+                blue: 0%
+                brightness: 80%
+          else:
+            - light.turn_off: atom_led
+
+# Physical button triggers safe-mode flash
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO41
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    id: gpio_button
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - button.press: safe_mode_button
+
+dashboard_import:
+  package_import_url: github://jhenkens/esphome-navien/esphome/packages/navien-esphome-atoms3-lite-rs485base-esp32.yml@hardware-guide
+  import_full_config: false
