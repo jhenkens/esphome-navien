@@ -173,7 +173,7 @@ The recommended build is the **M5Stack AtomS3 Lite + Atomic RS485 Base**. The ba
 The easiest way to get started is to import the board config directly in the ESPHome dashboard using the **Import from URL** option with this URL:
 
 ```
-github://jhenkens/esphome-navien/esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml@main
+github://jhenkens/esphome-navien/esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml@hardware-guide
 ```
 
 This generates a minimal local config that pulls the full component definition from GitHub at build time. You only need to add your wifi credentials:
@@ -184,7 +184,7 @@ substitutions:
   friendly_name: Navien abc123
 
 packages:
-  navien.board: github://jhenkens/esphome-navien/esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml@main
+  navien.board: github://jhenkens/esphome-navien/esphome/navien-esphome-atoms3-lite-rs485base-esp32.yml@hardware-guide
 
 esphome:
   name: ${device_name}
