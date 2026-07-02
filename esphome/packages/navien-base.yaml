@@ -17,6 +17,7 @@ ota:
   - platform: esphome
 
 logger:
+  level: INFO
 
 uart:
   id: main_hw_uart
