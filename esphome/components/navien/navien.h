@@ -358,6 +358,9 @@ namespace navien {
     // true if connected to Navien.
     // otherwie - false.
     bool is_connected;
+
+  public:
+    bool is_hotbutton_mode_enabled() const { return state.hotbutton_mode_enabled; }
   };
 
 
